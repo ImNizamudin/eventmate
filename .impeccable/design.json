@@ -1,0 +1,97 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-11-26T16:24:00Z",
+  "title": "Design System: EventMate",
+  "extensions": {
+    "colorMeta": {
+      "primary": {
+        "role": "primary",
+        "displayName": "Deep Violet",
+        "canonical": "#5425a7",
+        "tonalRamp": ["#1d0b42", "#2f1363", "#411b85", "#5425a7", "#7347c2", "#9c7ae0", "#cbb7f0", "#f3eafa"]
+      },
+      "accent-rose": {
+        "role": "secondary",
+        "displayName": "Rose Magenta",
+        "canonical": "#b82366",
+        "tonalRamp": ["#470825", "#6e103b", "#931850", "#b82366", "#d83f83", "#eb72a8", "#f7b5d3", "#fdebf3"]
+      },
+      "surface-ground": {
+        "role": "neutral",
+        "displayName": "Ground Paper",
+        "canonical": "#fbf9fd",
+        "tonalRamp": ["#24163d", "#3f3257", "#5e5370", "#827794", "#ada3bd", "#d4cce0", "#eee8f5", "#fbf9fd"]
+      }
+    },
+    "typographyMeta": {
+      "display": { "displayName": "Display", "purpose": "Landing page headline and workspace greeting." },
+      "headline": { "displayName": "Headline", "purpose": "Page titles and modal headers." },
+      "title": { "displayName": "Title", "purpose": "Team cards, member cards, and panels." },
+      "body": { "displayName": "Body", "purpose": "Descriptions, announcements, and reviews." },
+      "label": { "displayName": "Label", "purpose": "Form labels, nav sections, and status badges." }
+    },
+    "shadows": [
+      { "name": "card-hover", "value": "0 10px 28px rgba(36, 22, 61, 0.08)", "purpose": "Interactive card lift on pointer hover." },
+      { "name": "modal-dialog", "value": "0 24px 64px rgba(18, 10, 34, 0.24)", "purpose": "Modal and drawer layer separation." }
+    ],
+    "motion": [
+      { "name": "ease-standard", "value": "cubic-bezier(0.2, 0.8, 0.2, 1)", "purpose": "180ms state transitions for Operate UI." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px" },
+      { "name": "md", "value": "768px" },
+      { "name": "lg", "value": "1024px" }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "button-primary",
+      "description": "Main commit action across forms and cards.",
+      "html": "<button class=\"ds-btn-primary\">Publikasikan tim</button>",
+      "css": ".ds-btn-primary { background: #5425a7; color: #ffffff; padding: 11px 18px; border-radius: 12px; font-weight: 700; font-size: 0.875rem; border: none; cursor: pointer; transition: background 180ms ease, transform 180ms ease; } .ds-btn-primary:hover { background: #3d1880; } .ds-btn-primary:focus-visible { outline: 2px solid #5425a7; outline-offset: 2px; }"
+    },
+    {
+      "name": "Status Badge",
+      "kind": "chip",
+      "refersTo": "status-pending-bg",
+      "description": "Explicit status indicator for Pending, Accepted, and Rejected states.",
+      "html": "<span class=\"ds-badge-accepted\">Diterima</span>",
+      "css": ".ds-badge-accepted { display: inline-flex; align-items: center; gap: 6px; padding: 4px 10px; border-radius: 9999px; font-size: 0.75rem; font-weight: 700; background: #eaf7f0; color: #155e3d; }"
+    },
+    {
+      "name": "Input Field",
+      "kind": "input",
+      "refersTo": "input-field",
+      "description": "Accessible form input with 3:1 border contrast.",
+      "html": "<input class=\"ds-input\" placeholder=\"Contoh: Universitas Negeri Malang\" />",
+      "css": ".ds-input { width: 100%; background: #ffffff; color: #24163d; border: 1px solid #c7bad9; border-radius: 8px; padding: 10px 12px; font-size: 0.875rem; } .ds-input:focus { outline: 2px solid #5425a7; outline-offset: 1px; border-color: #5425a7; }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Campus Roster",
+    "overview": "EventMate pairs the warmth and clarity of a student collaboration board with the discipline of an operational directory. Derived from EventMate's existing Brand Refresh identity and logo, the interface anchors itself in deep violet ink and crisp white work surfaces over a faint tinted ground, reserving rose-magenta strictly for primary brand moments and key actions rather than spreading it across every panel.",
+    "keyCharacteristics": [
+      "Solid white operational cards separated by 1px subtle violet-tinted borders rather than stacked drop shadows.",
+      "Crisp semantic state badges (Pending, Accepted, Rejected) pairing icon, tint, and high-contrast text.",
+      "Consistent 12px control radius and 16px container radius across all screens.",
+      "Single-axis brand gradient restricted to the hero banner and membership card."
+    ],
+    "rules": [
+      { "name": "The Brand Restraint Rule", "body": "Gradients and rose accents appear only on the public entry hero, workspace welcome banner, and membership plan card.", "section": "colors" },
+      { "name": "The Tabular Metric Rule", "body": "Slot counts, deadlines, and rating averages use tabular-nums so numbers align cleanly.", "section": "typography" },
+      { "name": "The Single-Elevation Rule", "body": "Resting cards stay flat with a 1px hairline border; shadows indicate active hover or modal layer separation only.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do verify every foreground/background pair against WCAG AA (>= 4.5:1 normal text, >= 3:1 UI borders and large text).",
+      "Do include explicit Loading skeleton, Empty (with next action), and Error (with retry) states on every data page.",
+      "Do show shared contact fields only after mutual Accepted membership and never for blocked users."
+    ],
+    "donts": [
+      "Don't invent placeholder statistics, fake testimonials, or simulated payment activations.",
+      "Don't place decorative glow, backdrop blur on every card, or em dashes in UI copy.",
+      "Don't trap keyboard users in modals without Escape close and visible focus rings."
+    ]
+  }
+}
