@@ -10,10 +10,15 @@ import { formatDateId } from '../lib/constants';
 import { formatSupabaseError, supabase, uniqueChannelName } from '../lib/supabaseClient';
 
 export function RequestsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isCreator = profile?.role === 'creator';
   const { showToast } = useToast();
 
-  const [tab, setTab] = useState('incoming_requests');
+  const [tab, setTab] = useState(isCreator ? 'incoming_requests' : 'my_applications');
+
+  useEffect(() => {
+    setTab(isCreator ? 'incoming_requests' : 'my_applications');
+  }, [isCreator]);
   const [incomingRequests, setIncomingRequests] = useState([]);
   const [myApplications, setMyApplications] = useState([]);
   const [incomingInvites, setIncomingInvites] = useState([]);
@@ -166,24 +171,28 @@ export function RequestsPage() {
       />
 
       <div role="tablist" aria-label="Kategori permintaan" className="mb-6 flex flex-wrap gap-2">
-        {[
-          {
-            id: 'incoming_requests',
-            label: `Permintaan Masuk (${pendingIncomingReqCount})`,
-          },
-          {
-            id: 'my_applications',
-            label: `Application Status Saya (${myApplications.length})`,
-          },
-          {
-            id: 'incoming_invites',
-            label: `Undangan Masuk (${pendingIncomingInvCount})`,
-          },
-          {
-            id: 'outgoing_invites',
-            label: `Undangan Terkirim (${outgoingInvites.length})`,
-          },
-        ].map((item) => (
+        {(isCreator
+          ? [
+              {
+                id: 'incoming_requests',
+                label: `Permintaan Masuk (${pendingIncomingReqCount})`,
+              },
+              {
+                id: 'outgoing_invites',
+                label: `Undangan Terkirim (${outgoingInvites.length})`,
+              },
+            ]
+          : [
+              {
+                id: 'my_applications',
+                label: `Application Status Saya (${myApplications.length})`,
+              },
+              {
+                id: 'incoming_invites',
+                label: `Undangan Masuk (${pendingIncomingInvCount})`,
+              },
+            ]
+        ).map((item) => (
           <button
             key={item.id}
             type="button"

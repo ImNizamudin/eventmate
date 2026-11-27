@@ -36,6 +36,7 @@ export function DiscoverTeamsPage() {
   const [sendingJoin, setSendingJoin] = useState(false);
 
   const expired = isTrialExpired(profile);
+  const isCreator = profile?.role === 'creator';
 
   const fetchTeams = useCallback(async () => {
     if (!supabase || !user) return;
@@ -208,16 +209,22 @@ export function DiscoverTeamsPage() {
     <div>
       <PageHeader
         title={`Temukan Tim, ${profile?.name?.split(' ')[0] || 'Rekan'}`}
-        description="Jelajahi kesempatan kolaborasi terbaru dari seluruh akun EventMate dan kirim permintaan bergabung."
+        description={
+          isCreator
+            ? 'Lihat daftar tim yang sedang terbuka atau publikasikan tim baru milikmu.'
+            : 'Jelajahi kesempatan kolaborasi terbaru dari seluruh akun EventMate dan kirim permintaan bergabung.'
+        }
         actions={
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--em-primary-deep)]"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span>Buat Tim Baru</span>
-          </button>
+          isCreator ? (
+            <button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              className="em-btn-step inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--em-primary-deep)]"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              <span>Buat Tim Baru</span>
+            </button>
+          ) : null
         }
       />
 
@@ -378,11 +385,17 @@ export function DiscoverTeamsPage() {
           title={teams.length === 0 ? 'Belum ada tim yang dipublikasikan' : 'Tidak ada tim yang cocok'}
           description={
             teams.length === 0
-              ? 'Jadilah yang pertama membuat kesempatan tim agar anggota lain dapat bergabung.'
+              ? isCreator
+                ? 'Jadilah yang pertama membuat kesempatan tim agar anggota lain dapat bergabung.'
+                : 'Belum ada kesempatan tim terbuka saat ini. Tim baru dari Team Creator akan tampil otomatis di sini.'
               : 'Ubah kata kunci atau reset filter pencarian untuk melihat peluang lainnya.'
           }
-          actionLabel={teams.length === 0 ? 'Buat Tim Pertama' : 'Reset Filter'}
-          onAction={teams.length === 0 ? () => setCreateOpen(true) : resetFilters}
+          actionLabel={
+            teams.length === 0 ? (isCreator ? 'Buat Tim Pertama' : undefined) : 'Reset Filter'
+          }
+          onAction={
+            teams.length === 0 ? (isCreator ? () => setCreateOpen(true) : undefined) : resetFilters
+          }
         />
       ) : (
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
@@ -404,11 +417,13 @@ export function DiscoverTeamsPage() {
         </div>
       )}
 
-      <CreateTeamModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreated={fetchTeams}
-      />
+      {isCreator && (
+        <CreateTeamModal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          onCreated={fetchTeams}
+        />
+      )}
 
       <Modal
         open={Boolean(selectedTeam)}
@@ -495,6 +510,13 @@ export function DiscoverTeamsPage() {
                   </p>
                 </div>
                 <StatusBadge status={myRequests[selectedTeam.id]} />
+              </div>
+            ) : isCreator ? (
+              <div className="rounded-xl border border-[var(--em-border)] bg-[var(--em-rail)] p-4 text-xs text-[var(--em-muted)]">
+                Akun dengan peran <strong className="text-[var(--em-ink)]">Team Creator</strong>{' '}
+                hanya dapat membuat tim dan mengundang anggota. Hanya akun{' '}
+                <strong className="text-[var(--em-ink)]">Team Seeker</strong> yang dapat
+                mengirim permintaan bergabung.
               </div>
             ) : (
               <form onSubmit={handleJoinSubmit} className="space-y-3 border-t border-[var(--em-border)] pt-4">

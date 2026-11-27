@@ -209,20 +209,6 @@ export function AuthProvider({ children }) {
     setContacts(null);
   };
 
-  const switchRole = async () => {
-    if (!supabase || !profile) return;
-    const nextRole = profile.role === 'creator' ? 'seeker' : 'creator';
-    const { data, error } = await supabase
-      .from('profiles')
-      .update({ role: nextRole, updated_at: new Date().toISOString() })
-      .eq('id', profile.id)
-      .select('*')
-      .single();
-    if (error) throw new Error(formatSupabaseError(error));
-    setProfile(data);
-    return nextRole;
-  };
-
   const updateProfileAndContacts = async (profilePatch, contactPatch) => {
     if (!supabase || !user) throw new Error('Sesi tidak aktif.');
 
@@ -271,7 +257,6 @@ export function AuthProvider({ children }) {
     sendPasswordResetEmail,
     updatePassword,
     refreshProfile,
-    switchRole,
     updateProfileAndContacts,
   };
 

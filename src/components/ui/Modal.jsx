@@ -4,6 +4,8 @@ import { X } from 'lucide-react';
 export function Modal({ open, onClose, title, subtitle, children, maxWidth = 'max-w-xl' }) {
   const closeBtnRef = useRef(null);
   const previousFocusRef = useRef(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useEffect(() => {
     if (!open) return undefined;
@@ -14,7 +16,7 @@ export function Modal({ open, onClose, title, subtitle, children, maxWidth = 'ma
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
-        onClose();
+        onCloseRef.current?.();
       }
     };
     window.addEventListener('keydown', handleKeyDown);
@@ -25,7 +27,7 @@ export function Modal({ open, onClose, title, subtitle, children, maxWidth = 'ma
         previousFocusRef.current.focus();
       }
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 

@@ -429,7 +429,7 @@ export function AuthPage() {
 
                 <div>
                   <span className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                    Peran awal (dapat diganti kapan saja di aplikasi)
+                    Pilih peran akun (ditetapkan saat pendaftaran)
                   </span>
                   <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
                     <button
@@ -447,7 +447,7 @@ export function AuthPage() {
                         <span>Team Seeker</span>
                       </div>
                       <p className="mt-1 text-xs text-[var(--em-muted)]">
-                        Cari tim dan ajukan permintaan bergabung.
+                        Lihat peluang tim, ajukan lamaran, dan terima undangan.
                       </p>
                     </button>
 
@@ -466,7 +466,7 @@ export function AuthPage() {
                         <span>Team Creator</span>
                       </div>
                       <p className="mt-1 text-xs text-[var(--em-muted)]">
-                        Buat tim dan undang anggota yang sesuai.
+                        Buat tim baru, kelola pelamar, dan undang individu.
                       </p>
                     </button>
                   </div>

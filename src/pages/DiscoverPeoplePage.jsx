@@ -34,6 +34,7 @@ export function DiscoverPeoplePage() {
   const [reportDetails, setReportDetails] = useState('');
 
   const expired = isTrialExpired(profile);
+  const isCreator = profile?.role === 'creator';
 
   const fetchPeople = useCallback(async () => {
     if (!supabase || !user) return;
@@ -408,10 +409,10 @@ export function DiscoverPeoplePage() {
                       setSelectedPerson(person);
                       setReportMode(false);
                     }}
-                    className="inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-[var(--em-soft)] px-3.5 py-2 text-xs font-bold text-[var(--em-primary)] transition hover:bg-[#e7dbfa]"
+                    className="em-btn-step inline-flex min-h-[40px] items-center gap-1.5 rounded-xl bg-[var(--em-soft)] px-3.5 py-2 text-xs font-bold text-[var(--em-primary)] hover:bg-[#e7dbfa]"
                   >
                     <UserPlus className="h-3.5 w-3.5" aria-hidden="true" />
-                    <span>Profil & Undang</span>
+                    <span>{isCreator ? 'Profil & Undang' : 'Lihat Profil'}</span>
                   </button>
                 </div>
               </article>
@@ -499,7 +500,22 @@ export function DiscoverPeoplePage() {
 
             {!reportMode ? (
               <div className="border-t border-[var(--em-border)] pt-4">
-                {myTeams.length > 0 ? (
+                {!isCreator ? (
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <p className="text-xs text-[var(--em-muted)]">
+                      Hanya akun dengan peran <strong className="text-[var(--em-ink)]">Team Creator</strong>{' '}
+                      yang dapat mengirim undangan bergabung ke tim.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={() => setReportMode(true)}
+                      className="inline-flex min-h-[40px] items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-xs font-bold text-[#9e2424] hover:bg-[#fdeeee]"
+                    >
+                      <ShieldAlert className="h-4 w-4" aria-hidden="true" />
+                      <span>Laporkan / Blokir</span>
+                    </button>
+                  </div>
+                ) : myTeams.length > 0 ? (
                   <form onSubmit={handleSendInvite} className="space-y-3">
                     <div>
                       <label

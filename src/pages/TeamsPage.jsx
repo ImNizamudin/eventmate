@@ -9,7 +9,8 @@ import { EmptyState, ErrorState, LoadingState } from '../components/ui/StateView
 import { formatSupabaseError, supabase } from '../lib/supabaseClient';
 
 export function TeamsPage() {
-  const { user } = useAuth();
+  const { user, profile } = useAuth();
+  const isCreator = profile?.role === 'creator';
   const [searchParams, setSearchParams] = useSearchParams();
   const requestedTeamId = searchParams.get('team');
 
@@ -66,16 +67,22 @@ export function TeamsPage() {
     <div>
       <PageHeader
         title="Tim Saya & Ruang Kolaborasi"
-        description="Kelola pengumuman Team Creator, Member Directory, kontak anggota setelah diterima, serta ulasan dan keamanan."
+        description={
+          isCreator
+            ? 'Kelola tim yang kamu buat, pengumuman resmi, Member Directory, serta ulasan dan keamanan.'
+            : 'Lihat tim yang sudah menerima kamu, baca pengumuman creator, serta akses Member Directory dan kontak anggota.'
+        }
         actions={
-          <button
-            type="button"
-            onClick={() => setCreateOpen(true)}
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--em-primary-deep)]"
-          >
-            <Plus className="h-4 w-4" aria-hidden="true" />
-            <span>Buat Tim Baru</span>
-          </button>
+          isCreator ? (
+            <button
+              type="button"
+              onClick={() => setCreateOpen(true)}
+              className="em-btn-step inline-flex min-h-[44px] items-center gap-2 rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--em-primary-deep)]"
+            >
+              <Plus className="h-4 w-4" aria-hidden="true" />
+              <span>Buat Tim Baru</span>
+            </button>
+          ) : null
         }
       />
 
@@ -86,9 +93,14 @@ export function TeamsPage() {
       ) : teams.length === 0 ? (
         <EmptyState
           title="Kamu belum tergabung dalam tim mana pun"
-          description="Buat tim baru sebagai Team Creator atau kirim permintaan bergabung ke tim yang tersedia di halaman Temukan Tim."
-          actionLabel="Buat Tim Baru"
-          onAction={() => setCreateOpen(true)}
+          description={
+            isCreator
+              ? 'Buat tim baru sebagai Team Creator untuk mulai membuka rekrutmen dan mengundang kandidat.'
+              : 'Kirim permintaan bergabung ke tim di halaman Temukan Tim atau terima undangan dari Team Creator.'
+          }
+          actionLabel={isCreator ? 'Buat Tim Baru' : 'Cari Tim Sekarang'}
+          onAction={isCreator ? () => setCreateOpen(true) : undefined}
+          actionTo={!isCreator ? '/discover' : undefined}
         />
       ) : (
         <div className="grid grid-cols-1 gap-5 lg:grid-cols-12">
@@ -132,17 +144,19 @@ export function TeamsPage() {
         </div>
       )}
 
-      <CreateTeamModal
-        open={createOpen}
-        onClose={() => setCreateOpen(false)}
-        onCreated={(created) => {
-          if (created?.id) {
-            setSelectedTeamId(created.id);
-            setSearchParams({ team: created.id });
-          }
-          fetchMyTeams();
-        }}
-      />
+      {isCreator && (
+        <CreateTeamModal
+          open={createOpen}
+          onClose={() => setCreateOpen(false)}
+          onCreated={(created) => {
+            if (created?.id) {
+              setSelectedTeamId(created.id);
+              setSearchParams({ team: created.id });
+            }
+            fetchMyTeams();
+          }}
+        />
+      )}
     </div>
   );
 }
