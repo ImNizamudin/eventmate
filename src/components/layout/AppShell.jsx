@@ -1,14 +1,15 @@
-import { useState } from 'react';
-import { NavLink, Link, Outlet } from 'react-router-dom';
+import { useEffect, useRef, useState } from 'react';
+import { NavLink, Link, Outlet, useNavigate } from 'react-router-dom';
 import {
   Bell,
   Compass,
-  CreditCard,
   Inbox,
+  LogOut,
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
   Repeat,
+  Star,
   User,
   Users,
   Briefcase,
@@ -20,13 +21,44 @@ import { getInitials, getTrialDaysLeft, isTrialExpired } from '../../lib/constan
 import { useRealtimeNotifications } from '../../hooks/useRealtimeNotifications';
 
 export function AppShell() {
-  const { user, profile, switchRole } = useAuth();
+  const { user, profile, switchRole, signOut } = useAuth();
   const { showToast } = useToast();
+  const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [switchingRole, setSwitchingRole] = useState(false);
+  const [profileMenuOpen, setProfileMenuOpen] = useState(false);
+  const profileMenuRef = useRef(null);
 
-  const { unreadCount, pendingActionCount } = useRealtimeNotifications(user?.id);
+  useEffect(() => {
+    if (!profileMenuOpen) return undefined;
+    const handleClickOutside = (event) => {
+      if (profileMenuRef.current && !profileMenuRef.current.contains(event.target)) {
+        setProfileMenuOpen(false);
+      }
+    };
+    const handleEscape = (event) => {
+      if (event.key === 'Escape') {
+        setProfileMenuOpen(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    window.addEventListener('keydown', handleEscape);
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+      window.removeEventListener('keydown', handleEscape);
+    };
+  }, [profileMenuOpen]);
+
+  const handleLogout = async () => {
+    setProfileMenuOpen(false);
+    await signOut();
+    showToast('Kamu telah keluar dari akun.', 'info');
+    navigate('/auth?tab=login', { replace: true });
+  };
+
+  const notificationsState = useRealtimeNotifications(user?.id);
+  const { unreadCount, pendingActionCount } = notificationsState;
 
   const trialDays = getTrialDaysLeft(profile?.trial_started_at);
   const expired = isTrialExpired(profile);
@@ -67,7 +99,7 @@ export function AppShell() {
 
   const accountItems = [
     { to: '/profile', label: 'Profil Saya', icon: User },
-    { to: '/subscription', label: 'Membership', icon: CreditCard },
+    { to: '/subscription', label: 'Membership', icon: Star, isMembership: true },
   ];
 
   const mobilePrimaryItems = [
@@ -91,25 +123,39 @@ export function AppShell() {
         to={item.to}
         onClick={onSelect}
         title={isCompact ? item.label : undefined}
-        className={({ isActive }) =>
-          `group flex min-h-[44px] items-center justify-between gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
+        className={({ isActive }) => {
+          if (item.isMembership) {
+            return `group flex min-h-[44px] items-center justify-between gap-2.5 rounded-xl px-3 py-2.5 text-sm font-extrabold transition ${
+              isActive ? 'em-nav-membership-active shadow-sm' : 'em-nav-membership'
+            } ${isCompact ? 'justify-center px-2' : ''}`;
+          }
+          return `group flex min-h-[44px] items-center justify-between gap-2.5 rounded-xl px-3 py-2.5 text-sm font-semibold transition ${
             isActive
               ? 'bg-[var(--em-soft)] font-bold text-[var(--em-primary)]'
               : 'text-[var(--em-muted)] hover:bg-[var(--em-rail)] hover:text-[var(--em-ink)]'
-          } ${isCompact ? 'justify-center px-2' : ''}`
-        }
+          } ${isCompact ? 'justify-center px-2' : ''}`;
+        }}
       >
         {({ isActive }) => (
           <>
             <span className="flex items-center gap-3">
               <span
                 className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg transition ${
-                  isActive
-                    ? 'bg-[var(--em-primary)] text-white'
-                    : 'bg-white text-[var(--em-muted)] group-hover:text-[var(--em-primary)]'
+                  item.isMembership
+                    ? isActive
+                      ? 'bg-white/20 text-white'
+                      : 'bg-white text-[var(--em-rose)] shadow-xs'
+                    : isActive
+                      ? 'bg-[var(--em-primary)] text-white'
+                      : 'bg-white text-[var(--em-muted)] group-hover:text-[var(--em-primary)]'
                 }`}
               >
-                <Icon className="h-4 w-4" aria-hidden="true" />
+                <Icon
+                  className={`h-4 w-4 ${
+                    item.isMembership ? 'em-star-motion fill-current' : ''
+                  }`}
+                  aria-hidden="true"
+                />
               </span>
               {!isCompact && <span>{item.label}</span>}
             </span>
@@ -131,7 +177,7 @@ export function AppShell() {
       </a>
 
       <header className="sticky top-0 z-30 border-b border-[var(--em-border)] bg-white/95 backdrop-blur-sm">
-        <div className="mx-auto flex h-[72px] max-w-[1440px] items-center justify-between gap-3 px-4 sm:px-6 lg:px-8">
+        <div className="flex h-[72px] w-full items-center justify-between gap-3 px-4 sm:px-6">
           <div className="flex items-center gap-3">
             <button
               type="button"
@@ -174,7 +220,7 @@ export function AppShell() {
               type="button"
               onClick={handleRoleSwitch}
               disabled={switchingRole}
-              className="inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--em-border)] bg-white px-3 py-2 text-xs font-bold text-[var(--em-ink)] transition hover:bg-[var(--em-rail)] sm:text-sm"
+              className="em-btn-step inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--em-border)] bg-white px-3 py-2 text-xs font-bold text-[var(--em-ink)] hover:bg-[var(--em-rail)] sm:text-sm"
             >
               <Repeat className="h-4 w-4 text-[var(--em-primary)]" aria-hidden="true" />
               <span className="hidden sm:inline">
@@ -198,33 +244,65 @@ export function AppShell() {
               )}
             </Link>
 
-            <Link
-              to="/profile"
-              aria-label="Buka profil saya"
-              className="flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--em-border)] bg-[var(--em-soft)] text-sm font-extrabold text-[var(--em-primary)]"
-            >
-              {profile?.avatar_url ? (
-                <img
-                  src={profile.avatar_url}
-                  alt={profile.name || 'Avatar'}
-                  width="44"
-                  height="44"
-                  className="h-full w-full object-cover"
-                />
-              ) : (
-                getInitials(profile?.name || user?.email)
+            <div className="relative" ref={profileMenuRef}>
+              <button
+                type="button"
+                onClick={() => setProfileMenuOpen((prev) => !prev)}
+                aria-label="Menu akun"
+                aria-expanded={profileMenuOpen}
+                aria-haspopup="menu"
+                className="em-btn-step flex h-11 w-11 shrink-0 items-center justify-center overflow-hidden rounded-full border border-[var(--em-border)] bg-[var(--em-soft)] text-sm font-extrabold text-[var(--em-primary)]"
+              >
+                {profile?.avatar_url ? (
+                  <img
+                    src={profile.avatar_url}
+                    alt={profile.name || 'Avatar'}
+                    width="44"
+                    height="44"
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  getInitials(profile?.name || user?.email)
+                )}
+              </button>
+
+              {profileMenuOpen && (
+                <div
+                  role="menu"
+                  aria-label="Opsi akun"
+                  className="em-panel-swap absolute right-0 mt-2 w-48 rounded-2xl border border-[var(--em-border)] bg-white p-1.5 shadow-[var(--em-shadow-hover)]"
+                >
+                  <Link
+                    to="/profile"
+                    role="menuitem"
+                    onClick={() => setProfileMenuOpen(false)}
+                    className="flex min-h-[42px] w-full items-center gap-2.5 rounded-xl px-3 py-2 text-sm font-semibold text-[var(--em-ink)] transition hover:bg-[var(--em-rail)]"
+                  >
+                    <User className="h-4 w-4 text-[var(--em-primary)]" aria-hidden="true" />
+                    <span>Profil Saya</span>
+                  </Link>
+                  <button
+                    type="button"
+                    role="menuitem"
+                    onClick={handleLogout}
+                    className="flex min-h-[42px] w-full items-center gap-2.5 rounded-xl px-3 py-2 text-left text-sm font-bold text-[#9e2424] transition hover:bg-[#fdeeee]"
+                  >
+                    <LogOut className="h-4 w-4 shrink-0" aria-hidden="true" />
+                    <span>Logout</span>
+                  </button>
+                </div>
               )}
-            </Link>
+            </div>
           </div>
         </div>
       </header>
 
-      <div className="mx-auto flex max-w-[1440px]">
+      <div className="flex w-full">
         <aside
           aria-label="Navigasi utama"
-          className={`hidden shrink-0 border-r border-[var(--em-border)] bg-[var(--em-rail)] md:flex md:flex-col md:justify-between ${
+          className={`hidden shrink-0 border-r border-[var(--em-border)] bg-[var(--em-rail)] md:sticky md:top-[72px] md:flex md:h-[calc(100dvh-72px)] md:flex-col md:justify-between ${
             collapsed ? 'w-[84px] px-3 py-5' : 'w-[252px] px-4 py-6'
-          } min-h-[calc(100dvh-72px)]`}
+          }`}
         >
           <div className="space-y-6">
             <div>
@@ -272,8 +350,8 @@ export function AppShell() {
           id="main-content"
           className="min-w-0 flex-1 px-4 py-6 pb-24 sm:px-6 md:px-8 md:py-8 md:pb-12"
         >
-          <div className="mx-auto max-w-[1100px]">
-            <Outlet />
+          <div className="mx-auto w-full max-w-[1320px]">
+            <Outlet context={{ notificationsState }} />
           </div>
         </main>
       </div>

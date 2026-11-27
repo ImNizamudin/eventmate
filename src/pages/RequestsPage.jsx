@@ -7,7 +7,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/StateViews';
 import { formatDateId } from '../lib/constants';
-import { formatSupabaseError, supabase } from '../lib/supabaseClient';
+import { formatSupabaseError, supabase, uniqueChannelName } from '../lib/supabaseClient';
 
 export function RequestsPage() {
   const { user } = useAuth();
@@ -89,7 +89,7 @@ export function RequestsPage() {
   useEffect(() => {
     if (!supabase || !user) return undefined;
     const channel = supabase
-      .channel('requests-live-sync')
+      .channel(uniqueChannelName('requests-live-sync'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'join_requests' }, () =>
         fetchAllRequests()
       )
@@ -208,7 +208,7 @@ export function RequestsPage() {
       ) : (
         <>
           {tab === 'incoming_requests' && (
-            <div className="space-y-3">
+            <div className="em-panel-swap space-y-3">
               {incomingRequests.length === 0 ? (
                 <EmptyState
                   title="Belum ada permintaan bergabung masuk"
@@ -291,7 +291,7 @@ export function RequestsPage() {
           )}
 
           {tab === 'my_applications' && (
-            <div className="space-y-3">
+            <div className="em-panel-swap space-y-3">
               {myApplications.length === 0 ? (
                 <EmptyState
                   title="Kamu belum mengirim permintaan bergabung"
@@ -335,7 +335,7 @@ export function RequestsPage() {
           )}
 
           {tab === 'incoming_invites' && (
-            <div className="space-y-3">
+            <div className="em-panel-swap space-y-3">
               {incomingInvites.length === 0 ? (
                 <EmptyState
                   title="Belum ada undangan bergabung"
@@ -402,7 +402,7 @@ export function RequestsPage() {
           )}
 
           {tab === 'outgoing_invites' && (
-            <div className="space-y-3">
+            <div className="em-panel-swap space-y-3">
               {outgoingInvites.length === 0 ? (
                 <EmptyState
                   title="Belum ada undangan terkirim"

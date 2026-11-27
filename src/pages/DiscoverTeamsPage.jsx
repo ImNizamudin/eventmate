@@ -10,7 +10,7 @@ import { Modal } from '../components/ui/Modal';
 import { StatusBadge } from '../components/ui/StatusBadge';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/StateViews';
 import { TEAM_CATEGORIES, TEAM_MODES, TEAM_REGIONS, isTrialExpired } from '../lib/constants';
-import { formatSupabaseError, supabase } from '../lib/supabaseClient';
+import { formatSupabaseError, supabase, uniqueChannelName } from '../lib/supabaseClient';
 
 export function DiscoverTeamsPage() {
   const { user, profile } = useAuth();
@@ -97,7 +97,7 @@ export function DiscoverTeamsPage() {
   useEffect(() => {
     if (!supabase || !user) return undefined;
     const channel = supabase
-      .channel('discover-teams-sync')
+      .channel(uniqueChannelName('discover-teams-sync'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, () => fetchTeams())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'team_members' }, () =>
         fetchTeams()
@@ -221,35 +221,51 @@ export function DiscoverTeamsPage() {
         }
       />
 
-      <section className="em-hero-surface mb-6 rounded-3xl p-6 sm:p-7">
-        <div className="flex flex-col justify-between gap-5 lg:flex-row lg:items-center">
-          <div className="max-w-xl">
-            <h2 className="text-xl font-extrabold text-white sm:text-2xl">
+      <section className="em-enter mb-6 rounded-3xl border border-[var(--em-border)] bg-white p-5 sm:p-7">
+        <div className="grid grid-cols-1 items-center gap-6 lg:grid-cols-12">
+          <div className="lg:col-span-8">
+            <h2 className="text-xl font-extrabold tracking-tight text-[var(--em-ink)] sm:text-2xl">
               Bangun kolaborasi berbasis keahlian, bukan tebak-tebakan
             </h2>
-            <p className="mt-2 text-sm leading-relaxed text-white/90">
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-[var(--em-muted)]">
               Setiap perubahan tim, kuota anggota, dan status aplikasi langsung tersinkron antar
               akun. Kontak anggota tim terbuka otomatis setelah permintaanmu berstatus Accepted.
             </p>
+            <div className="mt-5 grid grid-cols-3 gap-2.5 sm:gap-3">
+              <div className="rounded-2xl border border-[var(--em-border)] bg-[var(--em-ground)] px-3.5 py-3">
+                <span className="block text-xs font-semibold text-[var(--em-muted)]">Tim Aktif</span>
+                <strong className="tabular-nums mt-0.5 block text-xl font-extrabold text-[var(--em-primary)]">
+                  {teams.length}
+                </strong>
+              </div>
+              <div className="rounded-2xl border border-[var(--em-border)] bg-[var(--em-ground)] px-3.5 py-3">
+                <span className="block text-xs font-semibold text-[var(--em-muted)]">
+                  Aplikasi Saya
+                </span>
+                <strong className="tabular-nums mt-0.5 block text-xl font-extrabold text-[var(--em-ink)]">
+                  {Object.keys(myRequests).length}
+                </strong>
+              </div>
+              <div className="rounded-2xl border border-[var(--em-border)] bg-[var(--em-ground)] px-3.5 py-3">
+                <span className="block text-xs font-semibold text-[var(--em-muted)]">
+                  Tim Diikuti
+                </span>
+                <strong className="tabular-nums mt-0.5 block text-xl font-extrabold text-[#155e3d]">
+                  {Object.keys(myMemberships).length}
+                </strong>
+              </div>
+            </div>
           </div>
-          <div className="grid grid-cols-3 gap-2.5 sm:gap-3">
-            <div className="rounded-2xl bg-white/15 px-3.5 py-3 text-white">
-              <span className="block text-xs font-semibold text-white/85">Tim Aktif</span>
-              <strong className="tabular-nums mt-0.5 block text-xl font-extrabold">
-                {teams.length}
-              </strong>
-            </div>
-            <div className="rounded-2xl bg-white/15 px-3.5 py-3 text-white">
-              <span className="block text-xs font-semibold text-white/85">Aplikasi Saya</span>
-              <strong className="tabular-nums mt-0.5 block text-xl font-extrabold">
-                {Object.keys(myRequests).length}
-              </strong>
-            </div>
-            <div className="rounded-2xl bg-white/15 px-3.5 py-3 text-white">
-              <span className="block text-xs font-semibold text-white/85">Tim Diikuti</span>
-              <strong className="tabular-nums mt-0.5 block text-xl font-extrabold">
-                {Object.keys(myMemberships).length}
-              </strong>
+
+          <div className="hidden lg:col-span-4 lg:block">
+            <div className="em-photo-frame overflow-hidden rounded-2xl border border-[var(--em-border)] bg-[var(--em-ground)]">
+              <img
+                src="/images/hero-collab.jpg"
+                alt="Ilustrasi pencarian dan pencocokan tim EventMate"
+                width="1200"
+                height="669"
+                className="aspect-[16/10] w-full object-cover"
+              />
             </div>
           </div>
         </div>

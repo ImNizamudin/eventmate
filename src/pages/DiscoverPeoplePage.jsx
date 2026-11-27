@@ -7,7 +7,7 @@ import { PageHeader } from '../components/layout/PageHeader';
 import { Modal } from '../components/ui/Modal';
 import { EmptyState, ErrorState, LoadingState } from '../components/ui/StateViews';
 import { formatDateId, getInitials, isTrialExpired } from '../lib/constants';
-import { formatSupabaseError, supabase } from '../lib/supabaseClient';
+import { formatSupabaseError, supabase, uniqueChannelName } from '../lib/supabaseClient';
 
 export function DiscoverPeoplePage() {
   const { user, profile } = useAuth();
@@ -95,7 +95,7 @@ export function DiscoverPeoplePage() {
   useEffect(() => {
     if (!supabase || !user) return undefined;
     const channel = supabase
-      .channel('discover-people-sync')
+      .channel(uniqueChannelName('discover-people-sync'))
       .on('postgres_changes', { event: '*', schema: 'public', table: 'profiles' }, () =>
         fetchPeople()
       )
@@ -339,7 +339,7 @@ export function DiscoverPeoplePage() {
             return (
               <article
                 key={person.id}
-                className="flex flex-col justify-between rounded-2xl border border-[var(--em-border)] bg-white p-5 transition hover:-translate-y-0.5 hover:border-[#cbbbe2] hover:shadow-[var(--em-shadow-hover)]"
+                className="em-card-lift flex flex-col justify-between rounded-2xl border border-[var(--em-border)] bg-white p-5"
               >
                 <div>
                   <div className="flex items-start gap-3">

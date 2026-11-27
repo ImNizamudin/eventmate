@@ -1,17 +1,14 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useOutletContext } from 'react-router-dom';
 import { Bell, CheckCheck } from 'lucide-react';
-import { useAuth } from '../context/AuthContext';
-import { useRealtimeNotifications } from '../hooks/useRealtimeNotifications';
 import { PageHeader } from '../components/layout/PageHeader';
 import { EmptyState, LoadingState } from '../components/ui/StateViews';
 import { formatDateId } from '../lib/constants';
 
 export function NotificationsPage() {
-  const { user } = useAuth();
   const navigate = useNavigate();
-  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } =
-    useRealtimeNotifications(user?.id);
+  const { notificationsState } = useOutletContext();
+  const { notifications, unreadCount, loading, markAsRead, markAllAsRead } = notificationsState;
   const [filter, setFilter] = useState('all');
 
   const visible =

@@ -1,6 +1,15 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
-import { ArrowLeft, Eye, EyeOff, MailCheck, RefreshCw, Search, Sparkles } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle2,
+  Eye,
+  EyeOff,
+  MailCheck,
+  RefreshCw,
+  Search,
+  Sparkles,
+} from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
 import { SupabaseSetupBanner } from '../components/ui/StateViews';
@@ -143,372 +152,412 @@ export function AuthPage() {
   };
 
   return (
-    <div className="min-h-dvh bg-[var(--em-ground)] px-4 py-8 sm:px-6">
-      <div className="mx-auto max-w-md">
+    <div className="min-h-dvh bg-[var(--em-ground)] px-4 py-6 sm:px-8 sm:py-10">
+      <div className="mx-auto max-w-5xl">
         <div className="mb-6 flex items-center justify-between">
           <Link
             to="/"
-            className="inline-flex min-h-[44px] items-center gap-2 rounded-xl px-2 text-sm font-bold text-[var(--em-muted)] hover:text-[var(--em-primary)]"
+            className="em-btn-step inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-[var(--em-border)] bg-white px-3.5 py-2 text-sm font-bold text-[var(--em-ink)] hover:bg-[var(--em-rail)]"
           >
             <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-            <span>Beranda</span>
+            <span>Kembali ke Beranda</span>
           </Link>
           <img
             src="/eventmate-logo.png"
             alt="EventMate"
-            width="132"
+            width="136"
             height="44"
             className="h-9 w-auto object-contain"
           />
         </div>
 
         {!isSupabaseConfigured && (
-          <div className="mb-5">
+          <div className="mb-6">
             <SupabaseSetupBanner />
           </div>
         )}
 
-        <div className="rounded-3xl border border-[var(--em-border)] bg-white p-6 shadow-sm sm:p-7">
-          {tab !== 'verify' && (
-            <div
-              role="tablist"
-              aria-label="Pilihan autentikasi"
-              className="mb-6 grid grid-cols-3 gap-1.5 rounded-xl bg-[var(--em-rail)] p-1"
-            >
+        <div className="grid grid-cols-1 items-stretch gap-6 lg:grid-cols-12">
+          <aside className="em-enter hidden flex-col justify-between rounded-3xl border border-[var(--em-border)] bg-white p-7 lg:col-span-5 lg:flex">
+            <div>
+              <h2 className="text-2xl font-extrabold leading-snug text-[var(--em-ink)]">
+                Satu akun untuk mencari tim maupun membangun tim
+              </h2>
+              <p className="mt-2 text-sm leading-relaxed text-[var(--em-muted)]">
+                Setiap pendaftaran dilengkapi konfirmasi email otomatis, pemulihan kata sandi, dan
+                kontrol visibilitas kontak antaranggota.
+              </p>
+
+              <div className="em-photo-frame mt-6 overflow-hidden rounded-2xl border border-[var(--em-border)] bg-[var(--em-ground)]">
+                <img
+                  src="/images/hero-collab.jpg"
+                  alt="Ilustrasi kolaborator kampus menyusun tim di EventMate"
+                  width="1200"
+                  height="669"
+                  className="aspect-[16/10] w-full object-cover"
+                />
+              </div>
+            </div>
+
+            <ul className="mt-6 space-y-2.5 border-t border-[var(--em-border)] pt-5 text-xs font-medium text-[var(--em-ink)]">
               {[
-                { id: 'login', label: 'Masuk' },
-                { id: 'signup', label: 'Daftar' },
-                { id: 'forgot', label: 'Lupa Sandi' },
-              ].map((item) => (
-                <button
-                  key={item.id}
-                  type="button"
-                  role="tab"
-                  aria-selected={tab === item.id}
-                  onClick={() => switchTab(item.id)}
-                  className={`min-h-[40px] rounded-lg px-2 py-2 text-xs font-bold transition sm:text-sm ${
-                    tab === item.id
-                      ? 'bg-[var(--em-primary)] text-white'
-                      : 'text-[var(--em-muted)] hover:text-[var(--em-ink)]'
-                  }`}
-                >
-                  {item.label}
-                </button>
+                'Verifikasi email otomatis dan fitur kirim ulang tautan',
+                'Sinkronisasi profil, tim, dan jumlah anggota secara real-time',
+                'Kontak terbuka hanya untuk rekan tim berstatus Accepted',
+              ].map((point) => (
+                <li key={point} className="flex items-start gap-2">
+                  <CheckCircle2
+                    className="mt-0.5 h-4 w-4 shrink-0 text-[var(--em-primary)]"
+                    aria-hidden="true"
+                  />
+                  <span>{point}</span>
+                </li>
               ))}
-            </div>
-          )}
+            </ul>
+          </aside>
 
-          {errorMsg && (
-            <div
-              role="alert"
-              className="mb-4 rounded-xl border border-[#f1c7c7] bg-[#fdeeee] p-3.5 text-sm text-[#9e2424]"
-            >
-              <p className="font-medium">{errorMsg}</p>
-              {pendingVerifyEmail && tab === 'login' && (
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={submitting || resendCooldown > 0}
-                  className="mt-2 inline-flex min-h-[38px] items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#9e2424] underline"
-                >
-                  <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
-                  {resendCooldown > 0
-                    ? `Kirim ulang dalam ${resendCooldown}d`
-                    : 'Kirim ulang email verifikasi'}
-                </button>
-              )}
-            </div>
-          )}
-
-          {infoMsg && (
-            <div
-              role="status"
-              className="mb-4 rounded-xl border border-[#bde4cd] bg-[#eaf7f0] p-3.5 text-sm text-[#155e3d]"
-            >
-              {infoMsg}
-            </div>
-          )}
-
-          {tab === 'login' && (
-            <form onSubmit={handleLogin} className="space-y-4">
-              <div>
-                <h1 className="text-xl font-extrabold text-[var(--em-ink)]">
-                  Masuk ke akun EventMate
-                </h1>
-                <p className="mt-1 text-sm text-[var(--em-muted)]">
-                  Gunakan email dan kata sandi yang sudah terdaftar dan terverifikasi.
-                </p>
+          <div className="em-enter em-enter-1 rounded-3xl border border-[var(--em-border)] bg-white p-6 shadow-sm sm:p-8 lg:col-span-7">
+            {tab !== 'verify' && (
+              <div
+                role="tablist"
+                aria-label="Pilihan autentikasi"
+                className="mb-6 grid grid-cols-3 gap-1.5 rounded-xl bg-[var(--em-rail)] p-1"
+              >
+                {[
+                  { id: 'login', label: 'Masuk' },
+                  { id: 'signup', label: 'Daftar' },
+                  { id: 'forgot', label: 'Lupa Sandi' },
+                ].map((item) => (
+                  <button
+                    key={item.id}
+                    type="button"
+                    role="tab"
+                    aria-selected={tab === item.id}
+                    onClick={() => switchTab(item.id)}
+                    className={`min-h-[42px] rounded-lg px-2 py-2 text-xs font-bold transition sm:text-sm ${
+                      tab === item.id
+                        ? 'bg-[var(--em-primary)] text-white'
+                        : 'text-[var(--em-muted)] hover:text-[var(--em-ink)]'
+                    }`}
+                  >
+                    {item.label}
+                  </button>
+                ))}
               </div>
+            )}
 
-              <div>
-                <label htmlFor="login-email" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                  Email
-                </label>
-                <input
-                  id="login-email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
-                />
+            {errorMsg && (
+              <div
+                role="alert"
+                className="mb-4 rounded-xl border border-[#f1c7c7] bg-[#fdeeee] p-3.5 text-sm text-[#9e2424]"
+              >
+                <p className="font-medium">{errorMsg}</p>
+                {pendingVerifyEmail && tab === 'login' && (
+                  <button
+                    type="button"
+                    onClick={handleResendVerification}
+                    disabled={submitting || resendCooldown > 0}
+                    className="mt-2 inline-flex min-h-[38px] items-center gap-1.5 rounded-lg bg-white px-3 py-1.5 text-xs font-bold text-[#9e2424] underline"
+                  >
+                    <RefreshCw className="h-3.5 w-3.5" aria-hidden="true" />
+                    {resendCooldown > 0
+                      ? `Kirim ulang dalam ${resendCooldown}d`
+                      : 'Kirim ulang email verifikasi'}
+                  </button>
+                )}
               </div>
+            )}
 
-              <div>
-                <div className="mb-1.5 flex items-center justify-between">
-                  <label htmlFor="login-password" className="text-xs font-bold text-[var(--em-ink)]">
-                    Kata sandi
+            {infoMsg && (
+              <div
+                role="status"
+                className="mb-4 rounded-xl border border-[#bde4cd] bg-[#eaf7f0] p-3.5 text-sm text-[#155e3d]"
+              >
+                {infoMsg}
+              </div>
+            )}
+
+            {tab === 'login' && (
+              <form onSubmit={handleLogin} className="em-panel-swap space-y-4">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[var(--em-ink)]">
+                    Masuk ke akun EventMate
+                  </h1>
+                  <p className="mt-1 text-sm text-[var(--em-muted)]">
+                    Gunakan email dan kata sandi yang sudah terdaftar dan terverifikasi.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="login-email" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
+                    Email
                   </label>
-                  <button
-                    type="button"
-                    onClick={() => switchTab('forgot')}
-                    className="text-xs font-bold text-[var(--em-primary)] hover:underline"
-                  >
-                    Lupa kata sandi?
-                  </button>
-                </div>
-                <div className="relative">
                   <input
-                    id="login-password"
-                    type={showPassword ? 'text' : 'password'}
+                    id="login-email"
+                    type="email"
                     required
-                    autoComplete="current-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Masukkan kata sandi"
-                    className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 pr-11 text-sm text-[var(--em-ink)]"
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
                   />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Lihat kata sandi'}
-                    className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[var(--em-muted)] hover:bg-[var(--em-rail)]"
-                  >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <Eye className="h-4 w-4" aria-hidden="true" />
-                    )}
-                  </button>
                 </div>
-              </div>
 
-              <button
-                type="submit"
-                disabled={submitting || !isSupabaseConfigured}
-                className="min-h-[46px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--em-primary-deep)] disabled:opacity-60"
-              >
-                {submitting ? 'Memeriksa akun...' : 'Masuk ke Workspace'}
-              </button>
-            </form>
-          )}
+                <div>
+                  <div className="mb-1.5 flex items-center justify-between">
+                    <label htmlFor="login-password" className="text-xs font-bold text-[var(--em-ink)]">
+                      Kata sandi
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => switchTab('forgot')}
+                      className="text-xs font-bold text-[var(--em-primary)] hover:underline"
+                    >
+                      Lupa kata sandi?
+                    </button>
+                  </div>
+                  <div className="relative">
+                    <input
+                      id="login-password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      autoComplete="current-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Masukkan kata sandi"
+                      className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 pr-11 text-sm text-[var(--em-ink)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Lihat kata sandi'}
+                      className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[var(--em-muted)] hover:bg-[var(--em-rail)]"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
 
-          {tab === 'signup' && (
-            <form onSubmit={handleSignup} className="space-y-4">
-              <div>
-                <h1 className="text-xl font-extrabold text-[var(--em-ink)]">
-                  Daftar akun baru
-                </h1>
-                <p className="mt-1 text-sm text-[var(--em-muted)]">
-                  Setelah mendaftar, kami akan mengirim tautan konfirmasi ke email kamu.
-                </p>
-              </div>
+                <button
+                  type="submit"
+                  disabled={submitting || !isSupabaseConfigured}
+                  className="em-btn-step min-h-[46px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--em-primary-deep)] disabled:opacity-60"
+                >
+                  {submitting ? 'Memeriksa akun...' : 'Masuk ke Workspace'}
+                </button>
+              </form>
+            )}
 
-              <div>
-                <label htmlFor="signup-name" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                  Nama lengkap
-                </label>
-                <input
-                  id="signup-name"
-                  type="text"
-                  required
-                  autoComplete="name"
-                  value={name}
-                  onChange={(e) => setName(e.target.value)}
-                  placeholder="Nama lengkap kamu"
-                  className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
-                />
-              </div>
+            {tab === 'signup' && (
+              <form onSubmit={handleSignup} className="em-panel-swap space-y-4">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[var(--em-ink)]">
+                    Daftar akun baru
+                  </h1>
+                  <p className="mt-1 text-sm text-[var(--em-muted)]">
+                    Setelah mendaftar, kami akan mengirim tautan konfirmasi ke email kamu.
+                  </p>
+                </div>
 
-              <div>
-                <label htmlFor="signup-email" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                  Email aktif
-                </label>
-                <input
-                  id="signup-email"
-                  type="email"
-                  required
-                  autoComplete="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
-                />
-              </div>
-
-              <div>
-                <label htmlFor="signup-password" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                  Kata sandi (minimal 6 karakter)
-                </label>
-                <div className="relative">
+                <div>
+                  <label htmlFor="signup-name" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
+                    Nama lengkap
+                  </label>
                   <input
-                    id="signup-password"
-                    type={showPassword ? 'text' : 'password'}
+                    id="signup-name"
+                    type="text"
                     required
-                    minLength={6}
-                    autoComplete="new-password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    placeholder="Minimal 6 karakter"
-                    className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 pr-11 text-sm text-[var(--em-ink)]"
+                    autoComplete="name"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    placeholder="Nama lengkap kamu"
+                    className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
                   />
+                </div>
+
+                <div>
+                  <label htmlFor="signup-email" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
+                    Email aktif
+                  </label>
+                  <input
+                    id="signup-email"
+                    type="email"
+                    required
+                    autoComplete="email"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
+                  />
+                </div>
+
+                <div>
+                  <label htmlFor="signup-password" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
+                    Kata sandi (minimal 6 karakter)
+                  </label>
+                  <div className="relative">
+                    <input
+                      id="signup-password"
+                      type={showPassword ? 'text' : 'password'}
+                      required
+                      minLength={6}
+                      autoComplete="new-password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      placeholder="Minimal 6 karakter"
+                      className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 pr-11 text-sm text-[var(--em-ink)]"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => setShowPassword((prev) => !prev)}
+                      aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Lihat kata sandi'}
+                      className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[var(--em-muted)] hover:bg-[var(--em-rail)]"
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4" aria-hidden="true" />
+                      ) : (
+                        <Eye className="h-4 w-4" aria-hidden="true" />
+                      )}
+                    </button>
+                  </div>
+                </div>
+
+                <div>
+                  <span className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
+                    Peran awal (dapat diganti kapan saja di aplikasi)
+                  </span>
+                  <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+                    <button
+                      type="button"
+                      onClick={() => setRole('seeker')}
+                      aria-pressed={role === 'seeker'}
+                      className={`em-card-lift rounded-xl border p-3.5 text-left ${
+                        role === 'seeker'
+                          ? 'border-2 border-[var(--em-primary)] bg-[var(--em-soft)]'
+                          : 'border-[var(--em-border)] bg-white hover:bg-[var(--em-rail)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 text-sm font-bold text-[var(--em-ink)]">
+                        <Search className="h-4 w-4 text-[var(--em-primary)]" aria-hidden="true" />
+                        <span>Team Seeker</span>
+                      </div>
+                      <p className="mt-1 text-xs text-[var(--em-muted)]">
+                        Cari tim dan ajukan permintaan bergabung.
+                      </p>
+                    </button>
+
+                    <button
+                      type="button"
+                      onClick={() => setRole('creator')}
+                      aria-pressed={role === 'creator'}
+                      className={`em-card-lift rounded-xl border p-3.5 text-left ${
+                        role === 'creator'
+                          ? 'border-2 border-[var(--em-primary)] bg-[var(--em-soft)]'
+                          : 'border-[var(--em-border)] bg-white hover:bg-[var(--em-rail)]'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 text-sm font-bold text-[var(--em-ink)]">
+                        <Sparkles className="h-4 w-4 text-[var(--em-rose)]" aria-hidden="true" />
+                        <span>Team Creator</span>
+                      </div>
+                      <p className="mt-1 text-xs text-[var(--em-muted)]">
+                        Buat tim dan undang anggota yang sesuai.
+                      </p>
+                    </button>
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting || !isSupabaseConfigured}
+                  className="em-btn-step min-h-[46px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--em-primary-deep)] disabled:opacity-60"
+                >
+                  {submitting ? 'Mendaftarkan akun...' : 'Buat Akun & Kirim Verifikasi'}
+                </button>
+              </form>
+            )}
+
+            {tab === 'forgot' && (
+              <form onSubmit={handleForgotPassword} className="em-panel-swap space-y-4">
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[var(--em-ink)]">
+                    Pemulihan kata sandi
+                  </h1>
+                  <p className="mt-1 text-sm text-[var(--em-muted)]">
+                    Masukkan email akun EventMate kamu untuk menerima tautan pengaturan ulang kata
+                    sandi.
+                  </p>
+                </div>
+
+                <div>
+                  <label htmlFor="forgot-email" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
+                    Email terdaftar
+                  </label>
+                  <input
+                    id="forgot-email"
+                    type="email"
+                    required
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="nama@email.com"
+                    className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
+                  />
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={submitting || !isSupabaseConfigured}
+                  className="em-btn-step min-h-[46px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--em-primary-deep)] disabled:opacity-60"
+                >
+                  {submitting ? 'Mengirim tautan...' : 'Kirim Email Pemulihan'}
+                </button>
+              </form>
+            )}
+
+            {tab === 'verify' && (
+              <div className="em-panel-swap space-y-4 py-4 text-center">
+                <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--em-soft)] text-[var(--em-primary)]">
+                  <MailCheck className="h-6 w-6" aria-hidden="true" />
+                </div>
+                <div>
+                  <h1 className="text-2xl font-extrabold text-[var(--em-ink)]">
+                    Periksa email kamu untuk konfirmasi
+                  </h1>
+                  <p className="mt-2 text-sm leading-relaxed text-[var(--em-muted)]">
+                    Kami telah mengirim tautan verifikasi ke{' '}
+                    <strong className="text-[var(--em-ink)]">{pendingVerifyEmail || email}</strong>.
+                    Klik tautan di kotak masuk atau folder spam, lalu masuk kembali.
+                  </p>
+                </div>
+
+                <div className="flex flex-col gap-2.5 pt-2">
                   <button
                     type="button"
-                    onClick={() => setShowPassword((prev) => !prev)}
-                    aria-label={showPassword ? 'Sembunyikan kata sandi' : 'Lihat kata sandi'}
-                    className="absolute right-1.5 top-1/2 flex h-9 w-9 -translate-y-1/2 items-center justify-center rounded-md text-[var(--em-muted)] hover:bg-[var(--em-rail)]"
+                    onClick={handleResendVerification}
+                    disabled={submitting || resendCooldown > 0}
+                    className="em-btn-step inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[var(--em-border)] bg-[var(--em-soft)] px-4 py-2.5 text-sm font-bold text-[var(--em-primary)] hover:bg-[#e8dbfa] disabled:opacity-60"
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4" aria-hidden="true" />
-                    ) : (
-                      <Eye className="h-4 w-4" aria-hidden="true" />
-                    )}
+                    <RefreshCw className="h-4 w-4" aria-hidden="true" />
+                    {resendCooldown > 0
+                      ? `Kirim ulang tersedia dalam ${resendCooldown} detik`
+                      : 'Kirim Ulang Email Verifikasi'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => switchTab('login')}
+                    className="em-btn-step min-h-[44px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white hover:bg-[var(--em-primary-deep)]"
+                  >
+                    Sudah Konfirmasi? Masuk Sekarang
                   </button>
                 </div>
               </div>
-
-              <div>
-                <span className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                  Peran awal (dapat diganti kapan saja di aplikasi)
-                </span>
-                <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
-                  <button
-                    type="button"
-                    onClick={() => setRole('seeker')}
-                    aria-pressed={role === 'seeker'}
-                    className={`rounded-xl border p-3.5 text-left transition ${
-                      role === 'seeker'
-                        ? 'border-2 border-[var(--em-primary)] bg-[var(--em-soft)]'
-                        : 'border-[var(--em-border)] bg-white hover:bg-[var(--em-rail)]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--em-ink)]">
-                      <Search className="h-4 w-4 text-[var(--em-primary)]" aria-hidden="true" />
-                      <span>Team Seeker</span>
-                    </div>
-                    <p className="mt-1 text-xs text-[var(--em-muted)]">
-                      Cari tim dan ajukan permintaan bergabung.
-                    </p>
-                  </button>
-
-                  <button
-                    type="button"
-                    onClick={() => setRole('creator')}
-                    aria-pressed={role === 'creator'}
-                    className={`rounded-xl border p-3.5 text-left transition ${
-                      role === 'creator'
-                        ? 'border-2 border-[var(--em-primary)] bg-[var(--em-soft)]'
-                        : 'border-[var(--em-border)] bg-white hover:bg-[var(--em-rail)]'
-                    }`}
-                  >
-                    <div className="flex items-center gap-2 text-sm font-bold text-[var(--em-ink)]">
-                      <Sparkles className="h-4 w-4 text-[var(--em-rose)]" aria-hidden="true" />
-                      <span>Team Creator</span>
-                    </div>
-                    <p className="mt-1 text-xs text-[var(--em-muted)]">
-                      Buat tim dan undang anggota yang sesuai.
-                    </p>
-                  </button>
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting || !isSupabaseConfigured}
-                className="min-h-[46px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--em-primary-deep)] disabled:opacity-60"
-              >
-                {submitting ? 'Mendaftarkan akun...' : 'Buat Akun & Kirim Verifikasi'}
-              </button>
-            </form>
-          )}
-
-          {tab === 'forgot' && (
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div>
-                <h1 className="text-xl font-extrabold text-[var(--em-ink)]">
-                  Pemulihan kata sandi
-                </h1>
-                <p className="mt-1 text-sm text-[var(--em-muted)]">
-                  Masukkan email akun EventMate kamu untuk menerima tautan pengaturan ulang kata
-                  sandi.
-                </p>
-              </div>
-
-              <div>
-                <label htmlFor="forgot-email" className="mb-1.5 block text-xs font-bold text-[var(--em-ink)]">
-                  Email terdaftar
-                </label>
-                <input
-                  id="forgot-email"
-                  type="email"
-                  required
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="nama@email.com"
-                  className="min-h-[44px] w-full rounded-lg border border-[var(--em-input-border)] bg-white px-3 py-2 text-sm text-[var(--em-ink)]"
-                />
-              </div>
-
-              <button
-                type="submit"
-                disabled={submitting || !isSupabaseConfigured}
-                className="min-h-[46px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--em-primary-deep)] disabled:opacity-60"
-              >
-                {submitting ? 'Mengirim tautan...' : 'Kirim Email Pemulihan'}
-              </button>
-            </form>
-          )}
-
-          {tab === 'verify' && (
-            <div className="space-y-4 text-center">
-              <div className="mx-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-[var(--em-soft)] text-[var(--em-primary)]">
-                <MailCheck className="h-6 w-6" aria-hidden="true" />
-              </div>
-              <div>
-                <h1 className="text-xl font-extrabold text-[var(--em-ink)]">
-                  Periksa email kamu untuk konfirmasi
-                </h1>
-                <p className="mt-2 text-sm leading-relaxed text-[var(--em-muted)]">
-                  Kami telah mengirim tautan verifikasi ke{' '}
-                  <strong className="text-[var(--em-ink)]">{pendingVerifyEmail || email}</strong>.
-                  Klik tautan di kotak masuk atau folder spam, lalu masuk kembali.
-                </p>
-              </div>
-
-              <div className="flex flex-col gap-2.5 pt-2">
-                <button
-                  type="button"
-                  onClick={handleResendVerification}
-                  disabled={submitting || resendCooldown > 0}
-                  className="inline-flex min-h-[44px] w-full items-center justify-center gap-2 rounded-xl border border-[var(--em-border)] bg-[var(--em-soft)] px-4 py-2.5 text-sm font-bold text-[var(--em-primary)] transition hover:bg-[#e8dbfa] disabled:opacity-60"
-                >
-                  <RefreshCw className="h-4 w-4" aria-hidden="true" />
-                  {resendCooldown > 0
-                    ? `Kirim ulang tersedia dalam ${resendCooldown} detik`
-                    : 'Kirim Ulang Email Verifikasi'}
-                </button>
-                <button
-                  type="button"
-                  onClick={() => switchTab('login')}
-                  className="min-h-[44px] w-full rounded-xl bg-[var(--em-primary)] px-4 py-2.5 text-sm font-bold text-white transition hover:bg-[var(--em-primary-deep)]"
-                >
-                  Sudah Konfirmasi? Masuk Sekarang
-                </button>
-              </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
       </div>
     </div>

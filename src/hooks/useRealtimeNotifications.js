@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react';
-import { supabase } from '../lib/supabaseClient';
+import { supabase, uniqueChannelName } from '../lib/supabaseClient';
 
 export function useRealtimeNotifications(userId) {
   const [notifications, setNotifications] = useState([]);
@@ -56,7 +56,7 @@ export function useRealtimeNotifications(userId) {
     if (!supabase || !userId) return undefined;
 
     const channel = supabase
-      .channel(`user-live-${userId}`)
+      .channel(uniqueChannelName(`user-live-${userId}`))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'notifications', filter: `user_id=eq.${userId}` },

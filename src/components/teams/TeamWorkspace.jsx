@@ -20,7 +20,7 @@ import { Modal } from '../ui/Modal';
 import { StatusBadge } from '../ui/StatusBadge';
 import { EmptyState, ErrorState, LoadingState } from '../ui/StateViews';
 import { formatDateId, getInitials } from '../../lib/constants';
-import { formatSupabaseError, supabase } from '../../lib/supabaseClient';
+import { formatSupabaseError, supabase, uniqueChannelName } from '../../lib/supabaseClient';
 
 export function TeamWorkspace({ team, onTeamUpdated }) {
   const { user } = useAuth();
@@ -137,7 +137,7 @@ export function TeamWorkspace({ team, onTeamUpdated }) {
   useEffect(() => {
     if (!supabase || !team?.id) return undefined;
     const channel = supabase
-      .channel(`workspace-${team.id}`)
+      .channel(uniqueChannelName(`workspace-${team.id}`))
       .on(
         'postgres_changes',
         { event: '*', schema: 'public', table: 'team_members', filter: `team_id=eq.${team.id}` },
@@ -364,11 +364,20 @@ export function TeamWorkspace({ team, onTeamUpdated }) {
       ) : (
         <>
           {activeTab === 'directory' && (
-            <div className="space-y-4">
-              <div className="rounded-xl border border-[var(--em-border)] bg-[var(--em-rail)] p-3.5 text-xs text-[var(--em-muted)]">
-                <strong className="text-[var(--em-ink)]">Contact Information</strong> hanya
-                ditampilkan untuk anggota yang sudah berstatus <strong>Accepted</strong> di tim ini
-                dan sesuai persetujuan berbagi kontak masing-masing anggota.
+            <div className="em-panel-swap space-y-4">
+              <div className="flex flex-col items-start justify-between gap-4 rounded-2xl border border-[var(--em-border)] bg-[var(--em-rail)] p-4 sm:flex-row sm:items-center">
+                <p className="text-xs leading-relaxed text-[var(--em-muted)]">
+                  <strong className="text-[var(--em-ink)]">Contact Information</strong> hanya
+                  ditampilkan untuk anggota yang sudah berstatus <strong>Accepted</strong> di tim
+                  ini dan sesuai persetujuan berbagi kontak masing-masing anggota.
+                </p>
+                <img
+                  src="/images/contact-privacy.jpg"
+                  alt="Ilustrasi perlindungan kontak anggota tim"
+                  width="960"
+                  height="716"
+                  className="hidden h-14 w-20 shrink-0 rounded-xl border border-[var(--em-border)] object-cover sm:block"
+                />
               </div>
 
               <div className="space-y-3">
@@ -537,7 +546,7 @@ export function TeamWorkspace({ team, onTeamUpdated }) {
           )}
 
           {activeTab === 'announcements' && (
-            <div className="space-y-5">
+            <div className="em-panel-swap space-y-5">
               {isCreator && (
                 <form
                   onSubmit={handlePostAnnouncement}
@@ -649,7 +658,7 @@ export function TeamWorkspace({ team, onTeamUpdated }) {
           )}
 
           {activeTab === 'status' && (
-            <div className="space-y-3">
+            <div className="em-panel-swap space-y-3">
               <div className="rounded-2xl border border-[var(--em-border)] bg-[var(--em-ground)] p-4">
                 <div className="flex items-center justify-between gap-3">
                   <div>

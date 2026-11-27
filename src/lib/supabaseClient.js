@@ -20,6 +20,10 @@ export const supabase = isSupabaseConfigured
     })
   : null;
 
+export function uniqueChannelName(prefix) {
+  return `${prefix}-${Date.now()}-${Math.random().toString(36).slice(2, 7)}`;
+}
+
 export function formatSupabaseError(error, fallback = 'Terjadi kendala saat memproses permintaan.') {
   if (!error) return fallback;
   const msg = String(error.message || error.error_description || '').toLowerCase();

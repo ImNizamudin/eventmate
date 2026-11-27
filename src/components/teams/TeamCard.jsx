@@ -6,7 +6,7 @@ export function TeamCard({ team, membershipRole, requestStatus, onSelect }) {
   const slotsLeft = Math.max(0, (team.needed_count || 0) - additionalJoined);
 
   return (
-    <article className="flex flex-col justify-between rounded-2xl border border-[var(--em-border)] bg-white p-5 transition duration-200 hover:-translate-y-0.5 hover:border-[#cbbbe2] hover:shadow-[var(--em-shadow-hover)]">
+    <article className="em-card-lift flex flex-col justify-between rounded-2xl border border-[var(--em-border)] bg-white p-5">
       <div>
         <div className="flex flex-wrap items-center justify-between gap-2">
           <span className="rounded-lg bg-[var(--em-soft)] px-2.5 py-1 text-xs font-bold text-[var(--em-primary)]">
@@ -71,7 +71,7 @@ export function TeamCard({ team, membershipRole, requestStatus, onSelect }) {
         <button
           type="button"
           onClick={() => onSelect(team)}
-          className="inline-flex min-h-[40px] items-center justify-center rounded-xl bg-[var(--em-primary)] px-3.5 py-2 text-xs font-bold text-white transition hover:bg-[var(--em-primary-deep)]"
+          className="em-btn-step inline-flex min-h-[40px] items-center justify-center rounded-xl bg-[var(--em-primary)] px-3.5 py-2 text-xs font-bold text-white hover:bg-[var(--em-primary-deep)]"
         >
           {membershipRole ? 'Buka Tim' : 'Lihat Detail'}
         </button>
