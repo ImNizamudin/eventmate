@@ -56,7 +56,8 @@ export function formatDateId(isoValue, includeTime = true) {
 }
 
 export function getTrialStatus(profile) {
-  const isPaid = Boolean(profile?.paid);
+  const isAdmin = profile?.role === 'admin';
+  const isPaid = Boolean(profile?.paid) || isAdmin;
   const startMs = profile?.trial_started_at
     ? new Date(profile.trial_started_at).getTime()
     : Date.now();
@@ -70,6 +71,7 @@ export function getTrialStatus(profile) {
   const expired = !isPaid && remainingMs <= 0;
 
   return {
+    isAdmin,
     isPaid,
     expired,
     daysLeft,

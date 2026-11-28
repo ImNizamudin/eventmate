@@ -9,7 +9,7 @@ create table if not exists public.profiles (
   email text not null,
   name text not null,
   username text unique,
-  role text not null default 'seeker' check (role in ('seeker', 'creator')),
+  role text not null default 'seeker' check (role in ('seeker', 'creator', 'admin')),
   university text not null default '',
   major text not null default '',
   bio text not null default '',
@@ -710,6 +710,130 @@ drop trigger if exists on_membership_payment_review on public.membership_payment
 create trigger on_membership_payment_review
   after update on public.membership_payments
   for each row execute function public.handle_membership_payment_review();
+
+-- 13. Admin Role Security, Policies & Notifications
+create or replace function public.is_admin(p_user_id uuid)
+returns boolean
+language sql
+security definer
+stable
+set search_path = public
+as $$
+  select exists (
+    select 1 from public.profiles
+    where id = p_user_id and role = 'admin'
+  );
+$$;
+
+create or replace function public.prevent_privilege_escalation()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if current_user = 'authenticated' and pg_trigger_depth() = 0 and not public.is_admin(auth.uid()) then
+    new.role := old.role;
+    new.verified := old.verified;
+    new.paid := old.paid;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists trg_prevent_privilege_escalation on public.profiles;
+create trigger trg_prevent_privilege_escalation
+  before update on public.profiles
+  for each row execute function public.prevent_privilege_escalation();
+
+create policy "profiles_update_admin" on public.profiles
+  for update to authenticated
+  using (public.is_admin(auth.uid()))
+  with check (public.is_admin(auth.uid()));
+
+create policy "payments_select_admin" on public.membership_payments
+  for select to authenticated using (public.is_admin(auth.uid()));
+
+create policy "payments_update_admin" on public.membership_payments
+  for update to authenticated
+  using (public.is_admin(auth.uid()))
+  with check (public.is_admin(auth.uid()));
+
+create policy "payment_proofs_read_admin" on storage.objects
+  for select to authenticated using (
+    bucket_id = 'payment-proofs' and public.is_admin(auth.uid())
+  );
+
+create policy "reports_select_admin" on public.reports
+  for select to authenticated using (public.is_admin(auth.uid()));
+
+create policy "reports_update_admin" on public.reports
+  for update to authenticated
+  using (public.is_admin(auth.uid()))
+  with check (public.is_admin(auth.uid()));
+
+create policy "blocks_select_admin" on public.user_blocks
+  for select to authenticated using (public.is_admin(auth.uid()));
+
+create policy "teams_update_admin" on public.teams
+  for update to authenticated
+  using (public.is_admin(auth.uid()))
+  with check (public.is_admin(auth.uid()));
+
+create policy "teams_delete_admin" on public.teams
+  for delete to authenticated using (public.is_admin(auth.uid()));
+
+create or replace function public.handle_profile_verified_notice()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if old.verified is distinct from new.verified and new.verified = true then
+    insert into public.notifications (user_id, type, title, body, link)
+    values (
+      new.id,
+      'request_decision',
+      'Identitas akun terverifikasi',
+      'Admin telah menyetujui pengajuan verifikasi identitasmu. Badge Terverifikasi kini tampil di profilmu.',
+      '/profile'
+    );
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_profile_verified_notice on public.profiles;
+create trigger on_profile_verified_notice
+  after update on public.profiles
+  for each row execute function public.handle_profile_verified_notice();
+
+create or replace function public.handle_report_status_notice()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if old.status is distinct from new.status and new.status in ('reviewed', 'resolved') then
+    insert into public.notifications (user_id, type, title, body, link)
+    values (
+      new.reporter_id,
+      'request_decision',
+      case when new.status = 'resolved' then 'Laporan kamu telah diselesaikan' else 'Laporan kamu sedang ditinjau admin' end,
+      'Admin telah memperbarui status laporan (' || new.category || ') menjadi ' || new.status || '.',
+      '/notifications'
+    );
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists on_report_status_notice on public.reports;
+create trigger on_report_status_notice
+  after update on public.reports
+  for each row execute function public.handle_report_status_notice();
 
 -- Realtime publication untuk sinkronisasi otomatis antar akun
 alter publication supabase_realtime add table

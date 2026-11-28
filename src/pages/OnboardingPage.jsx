@@ -62,7 +62,14 @@ export function OnboardingPage() {
         }
       );
       showToast('Profil selesai diatur. Selamat datang di EventMate!', 'success');
-      navigate(profile?.role === 'creator' ? '/teams' : '/discover', { replace: true });
+      navigate(
+        profile?.role === 'admin'
+          ? '/admin'
+          : profile?.role === 'creator'
+            ? '/teams'
+            : '/discover',
+        { replace: true }
+      );
     } catch (err) {
       setErrorMsg(err.message || 'Gagal menyimpan profil onboarding.');
     } finally {

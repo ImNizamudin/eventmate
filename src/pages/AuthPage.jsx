@@ -48,7 +48,11 @@ export function AuthPage() {
 
   useEffect(() => {
     if (user && profile) {
-      navigate(profile.onboarded ? '/discover' : '/onboarding', { replace: true });
+      if (profile.role === 'admin') {
+        navigate('/admin', { replace: true });
+      } else {
+        navigate(profile.onboarded ? '/discover' : '/onboarding', { replace: true });
+      }
     }
   }, [user, profile, navigate]);
 

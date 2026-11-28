@@ -9,6 +9,7 @@ import {
   Menu,
   PanelLeftClose,
   PanelLeftOpen,
+  ShieldCheck,
   Sparkles,
   Star,
   User,
@@ -29,6 +30,7 @@ const ROUTE_LABELS = {
   '/notifications': 'Notifikasi',
   '/profile': 'Profil Saya',
   '/subscription': 'Membership Pro',
+  '/admin': 'Panel Admin',
 };
 
 export function AppShell() {
@@ -74,6 +76,7 @@ export function AppShell() {
   const trialDays = getTrialDaysLeft(profile?.trial_started_at);
   const expired = isTrialExpired(profile);
   const isCreator = profile?.role === 'creator';
+  const isAdmin = profile?.role === 'admin';
   const currentRouteLabel = ROUTE_LABELS[location.pathname] || 'Workspace';
   const firstName = (profile?.name || user?.email?.split('@')[0] || 'Akun').split(/\s+/)[0];
 
@@ -97,8 +100,10 @@ export function AppShell() {
 
   const accountItems = [
     { to: '/profile', label: 'Profil Saya', icon: User },
-    { to: '/subscription', label: 'Membership', icon: Star, isMembership: true },
+    ...(!isAdmin ? [{ to: '/subscription', label: 'Membership', icon: Star, isMembership: true }] : []),
   ];
+
+  const adminItems = isAdmin ? [{ to: '/admin', label: 'Panel Admin', icon: ShieldCheck }] : [];
 
   const mobilePrimaryItems = [
     { to: '/discover', label: 'Tim', icon: Compass },
@@ -212,32 +217,43 @@ export function AppShell() {
           <div className="flex items-center gap-2">
             <div className="hidden h-11 items-center gap-1 rounded-xl border border-[var(--em-border)] bg-[var(--em-ground)] p-1 sm:inline-flex">
               <span className="inline-flex h-full items-center gap-1.5 rounded-lg bg-white px-2.5 text-xs font-bold text-[var(--em-ink)] shadow-2xs">
-                {isCreator ? (
+                {isAdmin ? (
+                  <ShieldCheck className="h-3.5 w-3.5 text-[#155e3d]" aria-hidden="true" />
+                ) : isCreator ? (
                   <Sparkles className="h-3.5 w-3.5 text-[var(--em-rose)]" aria-hidden="true" />
                 ) : (
                   <Compass className="h-3.5 w-3.5 text-[var(--em-primary)]" aria-hidden="true" />
                 )}
-                <span>{isCreator ? 'Team Creator' : 'Team Seeker'}</span>
+                <span>{isAdmin ? 'Admin' : isCreator ? 'Team Creator' : 'Team Seeker'}</span>
               </span>
 
-              <Link
-                to="/subscription"
-                className={`inline-flex h-full items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition ${
-                  profile?.paid
-                    ? 'text-[#155e3d] hover:bg-[#eaf7f0]'
-                    : expired
-                      ? 'text-[#9e2424] hover:bg-[#fdeeee]'
-                      : 'text-[var(--em-primary)] hover:bg-white'
-                }`}
-              >
-                <span className="tabular-nums">
-                  {profile?.paid
-                    ? 'Pro Aktif'
-                    : expired
-                      ? 'Trial Berakhir'
-                      : `Trial · ${trialDays} hari`}
-                </span>
-              </Link>
+              {isAdmin ? (
+                <Link
+                  to="/admin"
+                  className="inline-flex h-full items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold text-[#155e3d] transition hover:bg-white"
+                >
+                  <span>Panel Kontrol</span>
+                </Link>
+              ) : (
+                <Link
+                  to="/subscription"
+                  className={`inline-flex h-full items-center gap-1.5 rounded-lg px-2.5 text-xs font-bold transition ${
+                    profile?.paid
+                      ? 'text-[#155e3d] hover:bg-[#eaf7f0]'
+                      : expired
+                        ? 'text-[#9e2424] hover:bg-[#fdeeee]'
+                        : 'text-[var(--em-primary)] hover:bg-white'
+                  }`}
+                >
+                  <span className="tabular-nums">
+                    {profile?.paid
+                      ? 'Pro Aktif'
+                      : expired
+                        ? 'Trial Berakhir'
+                        : `Trial · ${trialDays} hari`}
+                  </span>
+                </Link>
+              )}
             </div>
 
             <Link
@@ -298,9 +314,21 @@ export function AppShell() {
                     </p>
                     <p className="truncate text-xs text-[var(--em-muted)]">{user?.email}</p>
                     <p className="mt-1 text-xs font-bold text-[var(--em-primary)]">
-                      {isCreator ? 'Team Creator' : 'Team Seeker'}
+                      {isAdmin ? 'Admin' : isCreator ? 'Team Creator' : 'Team Seeker'}
                     </p>
                   </div>
+
+                  {isAdmin && (
+                    <Link
+                      to="/admin"
+                      role="menuitem"
+                      onClick={() => setProfileMenuOpen(false)}
+                      className="flex min-h-[42px] w-full items-center gap-2.5 rounded-xl px-2.5 py-2 text-sm font-semibold text-[#155e3d] transition hover:bg-[#eaf7f0]"
+                    >
+                      <ShieldCheck className="h-4 w-4" aria-hidden="true" />
+                      <span>Panel Admin</span>
+                    </Link>
+                  )}
 
                   <Link
                     to="/profile"
@@ -356,6 +384,19 @@ export function AppShell() {
                 {accountItems.map((item) => renderNavItem(item, collapsed))}
               </nav>
             </div>
+
+            {isAdmin && (
+              <div>
+                {!collapsed && (
+                  <p className="mb-2 px-3 text-xs font-extrabold uppercase tracking-wider text-[#155e3d]">
+                    Administrasi
+                  </p>
+                )}
+                <nav className="space-y-1">
+                  {adminItems.map((item) => renderNavItem(item, collapsed))}
+                </nav>
+              </div>
+            )}
           </div>
 
           <button
@@ -478,6 +519,18 @@ export function AppShell() {
                   )}
                 </nav>
               </div>
+              {isAdmin && (
+                <div>
+                  <p className="mb-2 px-3 text-xs font-extrabold uppercase tracking-wider text-[#155e3d]">
+                    Administrasi
+                  </p>
+                  <nav className="space-y-1">
+                    {adminItems.map((item) =>
+                      renderNavItem(item, false, () => setMobileMenuOpen(false))
+                    )}
+                  </nav>
+                </div>
+              )}
             </div>
           </div>
         </div>

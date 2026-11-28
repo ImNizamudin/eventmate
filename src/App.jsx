@@ -13,6 +13,7 @@ import { TeamsPage } from './pages/TeamsPage';
 import { NotificationsPage } from './pages/NotificationsPage';
 import { ProfilePage } from './pages/ProfilePage';
 import { SubscriptionPage } from './pages/SubscriptionPage';
+import { AdminPage } from './pages/AdminPage';
 
 function FullScreenLoading() {
   return (
@@ -42,10 +43,19 @@ function ProtectedRoute({ children, requireOnboarded = true }) {
   return children;
 }
 
+function AdminRoute({ children }) {
+  const { user, profile, loading } = useAuth();
+  if (loading) return <FullScreenLoading />;
+  if (!user) return <Navigate to="/auth?tab=login" replace />;
+  if (profile?.role !== 'admin') return <Navigate to="/discover" replace />;
+  return children;
+}
+
 function PublicEntryRoute() {
   const { user, profile, loading } = useAuth();
   if (loading) return <FullScreenLoading />;
   if (user && profile) {
+    if (profile.role === 'admin') return <Navigate to="/admin" replace />;
     return <Navigate to={profile.onboarded ? '/discover' : '/onboarding'} replace />;
   }
   return <LandingPage />;
@@ -100,6 +110,14 @@ export default function App() {
               <Route path="/notifications" element={<NotificationsPage />} />
               <Route path="/profile" element={<ProfilePage />} />
               <Route path="/subscription" element={<SubscriptionPage />} />
+              <Route
+                path="/admin"
+                element={
+                  <AdminRoute>
+                    <AdminPage />
+                  </AdminRoute>
+                }
+              />
             </Route>
 
             <Route path="*" element={<NotFoundPage />} />
